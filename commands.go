@@ -13,6 +13,13 @@ func ping_command(session *discordgo.Session, event *discordgo.MessageCreate) {
 }
 
 func play_command(session *discordgo.Session, event *discordgo.MessageCreate) {
+	if is_playing {
+		return;
+	}
+	if event.Author.ID != ownerID {
+		session.ChannelMessageSend(event.ChannelID, "Bu komut sahiplere özeldir.");
+		return;
+	}
 	err := play_sound(session, guildID, channelID);
 	if err != nil {
 		format := fmt.Sprintf("An error occured, %v", err.Error());
@@ -27,6 +34,6 @@ func iftar_command(session *discordgo.Session, event *discordgo.MessageCreate) {
 		session.ChannelMessageSend(event.ChannelID, format);
 		return;
 	}
-	format := fmt.Sprintf("Kayseri merkez için iftar vakti, %v", iftar);
+	format := fmt.Sprintf("Kayseri merkez için iftar vakti, %v:%v", iftar.Hour(), iftar.Minute());
 	session.ChannelMessageSend(event.ChannelID, format);
 }

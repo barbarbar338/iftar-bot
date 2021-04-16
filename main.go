@@ -15,7 +15,9 @@ var (
 	prefix string
 	guildID string
 	channelID string
+	ownerID string
 	data []Vakit
+	is_playing = false
 )
 
 func main() {
@@ -42,6 +44,7 @@ func main() {
 	prefix = os.Getenv("BOT_PREFIX");
 	guildID = os.Getenv("GUILD_ID");
 	channelID = os.Getenv("CHANNEL_ID");
+	ownerID = os.Getenv("OWNER_ID");
 
 	discord, err := discordgo.New(fmt.Sprintf("Bot %v", token));
 	if err != nil {

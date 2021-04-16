@@ -72,6 +72,7 @@ func play_sound(session *discordgo.Session, guildID string, channelID string) er
 	if err != nil {
 		return err;
 	}
+	is_playing = true;
 	dgvoice.PlayAudioFile(
 		voice_connection,
 		"./assets/ezan.mp3",
@@ -82,6 +83,7 @@ func play_sound(session *discordgo.Session, guildID string, channelID string) er
 	if err != nil {
 		return err;
 	}
+	is_playing = false;
 	return nil;
 }
 
@@ -131,7 +133,7 @@ func task(session *discordgo.Session) {
 
 	if execute {
 		err := play_sound(session, guildID, channelID);
-		if err != nil {
+		if err != nil && !is_playing {
 			fmt.Printf("An error occured while playing sound on task, %v \n", err.Error());
 			return;
 		}
