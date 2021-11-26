@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bariscodes.me/gobot/logger"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -18,127 +20,144 @@ const (
 )
 
 type Vakit struct {
-	Aksam string `json:"Aksam"`
-    AyinSekliURL string `json:"AyinSekliURL"`
-    Gunes string `json:"Gunes"`
-    GunesBatis string `json:"GunesBatis"`
-    GunesDogus string `json:"GunesDogus"`
-    HicriTarihKisa string `json:"HicriTarihKisa"`
-    HicriTarihKisaIso8601 string `json:"HicriTarihKisaIso8601"`
-    HicriTarihUzun string `json:"HicriTarihUzun"`
-    HicriTarihUzunIso8601 string `json:"HicriTarihUzunIso8601"`
-    Ikindi string `json:"Ikindi"`
-    Imsak string `json:"Imsak"`
-    KibleSaati string `json:"KibleSaati"`
-    MiladiTarihKisa string `json:"MiladiTarihKisa"`
-    MiladiTarihKisaIso8601 string `json:"MiladiTarihKisaIso8601"`
-    MiladiTarihUzun string `json:"MiladiTarihUzun"`
-    MiladiTarihUzunIso8601 string `json:"MiladiTarihUzunIso8601"`
-    Ogle string `json:"Ogle"`
-    Yatsi string `json:"Yatsi"`
+	Aksam                  string `json:"Aksam"`
+	AyinSekliURL           string `json:"AyinSekliURL"`
+	Gunes                  string `json:"Gunes"`
+	GunesBatis             string `json:"GunesBatis"`
+	GunesDogus             string `json:"GunesDogus"`
+	HicriTarihKisa         string `json:"HicriTarihKisa"`
+	HicriTarihKisaIso8601  string `json:"HicriTarihKisaIso8601"`
+	HicriTarihUzun         string `json:"HicriTarihUzun"`
+	HicriTarihUzunIso8601  string `json:"HicriTarihUzunIso8601"`
+	Ikindi                 string `json:"Ikindi"`
+	Imsak                  string `json:"Imsak"`
+	KibleSaati             string `json:"KibleSaati"`
+	MiladiTarihKisa        string `json:"MiladiTarihKisa"`
+	MiladiTarihKisaIso8601 string `json:"MiladiTarihKisaIso8601"`
+	MiladiTarihUzun        string `json:"MiladiTarihUzun"`
+	MiladiTarihUzunIso8601 string `json:"MiladiTarihUzunIso8601"`
+	Ogle                   string `json:"Ogle"`
+	Yatsi                  string `json:"Yatsi"`
 }
 
-func fetch_data() ([]Vakit, error) {
-	res, err := http.Get(API_URL);
+// fetchData, fetching data to API
+func fetchData() ([]Vakit, error) {
+	res, err := http.Get(API_URL)
 	if err != nil {
-		fmt.Printf("An error occured while fetching data, %v \n", err.Error());
-		return nil, err;
+		logger.WithFields(logger.Fields{"component": "utils", "action": "do task."}).
+			Errorf("An error occured while fetching data, %v", err)
+
+		return nil, err
 	}
 
-	body, err := io.ReadAll(res.Body);
-	if err != nil {
-		fmt.Printf("An error occured while reading data, %v \n", err.Error());
-		return nil, err;
+	// check if http code is 200 (OK)
+	if res.StatusCode == http.StatusOK {
+		body, err := io.ReadAll(res.Body)
+		if err != nil {
+			logger.WithFields(logger.Fields{"component": "utils", "action": "do task."}).
+				Errorf("An error occured while reading data, %v", err)
+
+			return nil, err
+		}
+
+		var data []Vakit
+		err = json.Unmarshal(body, &data)
+		if err != nil {
+			logger.WithFields(logger.Fields{"component": "utils", "action": "do task."}).
+				Errorf("An error occured while unmarshaling data, %v", err)
+
+			return nil, err
+		}
+
+		return data, nil
 	}
 
-	var data []Vakit;
-	
-	err = json.Unmarshal(body, &data);
-	if err != nil {
-		fmt.Printf("An error occured while unmarshaling data, %v \n", err.Error());
-		return nil, err;
-	}
-
-	return data, nil;
+	return nil, errors.New(fmt.Sprintf("Got http status code %d from server", res.StatusCode))
 }
 
-func play_sound(session *discordgo.Session, guildID string, channelID string) error {
-	voice_connection, err := session.ChannelVoiceJoin(
-		guildID, 
-		channelID, 
-		false, 
-		true,
-	);
+// playSound, playing adzan sound
+func playSound(session *discordgo.Session, guildID string, channelID string) error {
+	voiceConnection, err := session.ChannelVoiceJoin(guildID, channelID, false, true)
 	if err != nil {
-		return err;
+		return err
 	}
-	is_playing = true;
-	dgvoice.PlayAudioFile(
-		voice_connection,
-		"./assets/ezan.mp3",
-		make(<-chan bool),
-	);
-	voice_connection.Close();
-	err = voice_connection.Disconnect();
+
+	isPlaying = true
+	dgvoice.PlayAudioFile(voiceConnection, "./assets/ezan.mp3", make(<-chan bool))
+
+	voiceConnection.Close()
+	err = voiceConnection.Disconnect()
 	if err != nil {
-		return err;
+		return err
 	}
-	is_playing = false;
-	return nil;
+
+	isPlaying = false	// reset flag
+	return nil
 }
 
-func get_iftar() (time.Time, error) {
-	date, err := time.Parse(time.RFC3339Nano, data[0].MiladiTarihUzunIso8601);
+// getIftar, get iftar information
+func getIftar() (time.Time, error) {
+	date, err := time.Parse(time.RFC3339Nano, data[0].MiladiTarihUzunIso8601)
 	if err != nil {
-		return date, err;
-	}
-	
-	split := strings.Split(data[0].Aksam, ":");
-
-	iftar, err := time.ParseDuration(fmt.Sprintf("%vh%vm", split[0], split[1]));
-	if err != nil {
-		return date, err;
+		return date, err
 	}
 
-	date = date.Add(iftar);
+	split := strings.Split(data[0].Aksam, ":")
 
-	return date, nil;
-}
-
-func is_iftar() (bool, error) {
-	date, err := get_iftar();
+	iftar, err := time.ParseDuration(fmt.Sprintf("%vh%vm", split[0], split[1]))
 	if err != nil {
-		return false, err;
+		return date, err
 	}
 
-	now := time.Now();
-
-	return (date.Hour() == now.Hour()) && (date.Minute() == now.Minute()), nil;
+	date = date.Add(iftar)
+	return date, nil
 }
 
-func setup_job(session *discordgo.Session) {
-	scheduler := gocron.NewScheduler(time.UTC);
-	scheduler.Every(30).Seconds().Do(task, session);
-	scheduler.StartAsync();
+// isIftar, validate iftar time
+func isIftar() (bool, error) {
+	date, err := getIftar()
+	if err != nil {
+		return false, err
+	}
+
+	return (date.Hour() == time.Now().Hour()) && (date.Minute() == time.Now().Minute()), nil
 }
 
+
+// setupJob, setting up job scheduler
+func setupJob(session *discordgo.Session) {
+	scheduler := gocron.NewScheduler(time.UTC)
+	job, err := scheduler.Every(30).Seconds().Do(task, session)
+
+	logger.WithFields(logger.Fields{"component": "utils", "action": "setup job."}).
+		Infof("job : %v, error : %v", job, err)
+
+	scheduler.StartAsync()
+}
+
+// task, execute task
 func task(session *discordgo.Session) {
-	now := time.Now();
+	now := time.Now()
 
-	execute, err := is_iftar();
+	execute, err := isIftar()
 	if err != nil {
-		fmt.Printf("An error occured while checking iftar time on task, %v \n", err.Error());
-		return;
+		logger.WithFields(logger.Fields{"component": "utils", "action": "do task."}).
+			Errorf("An error occured while checking iftar time on task, %v", err.Error())
+
+		return
 	}
 
 	if execute {
-		err := play_sound(session, guildID, channelID);
-		if err != nil && !is_playing {
-			fmt.Printf("An error occured while playing sound on task, %v \n", err.Error());
-			return;
+		err := playSound(session, guildID, channelID)
+		if err != nil && !isPlaying {
+			logger.WithFields(logger.Fields{"component": "utils", "action": "do task."}).
+				Errorf("An error occured while playing sound on task, %v", err.Error())
+
+			return
 		}
 	}
 
-	then := time.Now();
-	fmt.Printf("Task completed! Took %vms \n", then.Unix() - now.Unix());
+	elapse := time.Since(now)
+	logger.WithFields(logger.Fields{"component": "utils", "action": "do task."}).
+		Infof("Task completed! Took %v ms ", elapse)
 }

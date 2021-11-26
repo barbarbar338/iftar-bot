@@ -1,92 +1,75 @@
 package main
 
 import (
+	"bariscodes.me/gobot/logger"
 	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/joho/godotenv"
 )
 
 var (
-	token string
-	prefix string
-	guildID string
+	token     string
+	prefix    string
+	guildID   string
 	channelID string
-	ownerID string
-	data []Vakit
-	is_playing = false
+	ownerID   string
+	data      []Vakit
+	isPlaying bool
 )
 
 func main() {
-	res, err := fetch_data();
+	var err error
+	data, err = fetchData()
 	if err != nil {
-		fmt.Printf(
-			"An error occured while loading dataset, %v \n", 
-			err.Error(),
-		);
-		return;
-	}
-	data = res;
+		logger.WithFields(logger.Fields{"component": "main", "action": "fetching data from server."}).
+			Errorf("An error occurred while loading dataset, %v", err)
 
-	err = godotenv.Load();
-	if err != nil {
-		fmt.Printf(
-			"An error occured while loading .env file, %v \n", 
-			err.Error(),
-		);
-		return;
+		return
 	}
 
-	token = os.Getenv("BOT_TOKEN");
-	prefix = os.Getenv("BOT_PREFIX");
-	guildID = os.Getenv("GUILD_ID");
-	channelID = os.Getenv("CHANNEL_ID");
-	ownerID = os.Getenv("OWNER_ID");
-
-	discord, err := discordgo.New(fmt.Sprintf("Bot %v", token));
+	discord, err := discordgo.New(fmt.Sprintf("Bot %v", token))
 	if err != nil {
-		fmt.Printf(
-			"An error occured while creatind Discord session, %v \n", 
-			err.Error(),
-		);
-		return;
+		logger.WithFields(logger.Fields{"component": "main", "action": "create new discord session instance."}).
+			Errorf("An error occurred while creating discord session, %v", err)
+
+		return
 	}
 
-	discord.AddHandler(ready);
-	discord.AddHandler(messageCreate);
+	discord.AddHandler(ready)
+	discord.AddHandler(messageCreate)
 
-	err = discord.Open();
-
+	err = discord.Open()
 	if err != nil {
-		fmt.Printf(
-			"An error occured while connectin to Discord API, %v \n",
-			err.Error(),
-		);
-		return;
+		logger.WithFields(logger.Fields{"component": "main", "action": "create new discord session instance."}).
+			Errorf("An error occurred while connecting to discord API, %v", err)
+
+		return
 	}
 
-	fmt.Printf(
-		"Logged in as %v \n",
-		discord.State.User.Username,
-	);
+	logger.WithFields(logger.Fields{"component": "main", "action": "create new discord session instance."}).
+		Infof("Logged in as %v \n", discord.State.User.Username)
 
-	setup_job(discord);
+	setupJob(discord)
 
-	sc := make(chan os.Signal, 1);
+	sc := make(chan os.Signal, 1)
 	signal.Notify(
-		sc, 
-		syscall.SIGINT, 
-		syscall.SIGTERM, 
+		sc,
+		syscall.SIGINT,
+		syscall.SIGTERM,
 		os.Interrupt,
-	);
-	<-sc;
+	)
 
-	fmt.Println("Closing bot, see you later...");
+	<-sc
 
-	discord.Close();
+	logger.WithFields(logger.Fields{"component": "main", "action": "closing discord session instance."}).
+		Infof("Closing bot, see you later...")
+
+	err = discord.Close()
+	if err != nil {
+		logger.WithFields(logger.Fields{"component": "main", "action": "closing discord session instance."}).
+			Errorf("An error occurred while closing discord session instance, %v", err)
+	}
 }
-
-
