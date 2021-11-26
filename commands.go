@@ -1,21 +1,21 @@
 package main
 
 import (
-	"bariscodes.me/gobot/logger"
 	"errors"
 	"fmt"
+	"iftarbot/logger"
 
 	"github.com/bwmarrin/discordgo"
 )
 
-// ping message
+// ping command
 func ping(session *discordgo.Session, event *discordgo.MessageCreate)(*discordgo.Message, error) {
 	ping := session.HeartbeatLatency()
 	format := fmt.Sprintf(":ping_pong: Pong! %vms", ping.Milliseconds())
 	return session.ChannelMessageSend(event.ChannelID, format)
 }
 
-// play, play adzan sound
+// play command, plays adzan sound
 func play(session *discordgo.Session, event *discordgo.MessageCreate)(*discordgo.Message, error) {
 	if !isPlaying {
 		if event.Author.ID != ownerID {
@@ -36,7 +36,7 @@ func play(session *discordgo.Session, event *discordgo.MessageCreate)(*discordgo
 	return nil, errors.New("audio is playing")
 }
 
-// iftar, get iftar information
+// iftar command, get iftar information
 func iftar(session *discordgo.Session, event *discordgo.MessageCreate) (*discordgo.Message, error){
 	var format string
 
@@ -45,7 +45,7 @@ func iftar(session *discordgo.Session, event *discordgo.MessageCreate) (*discord
 		format = fmt.Sprintf("An error occured while parsing date, %v", err.Error())
 
 		logger.WithFields(logger.Fields{"component": "commands", "action": "get iftar information."}).
-			Errorf(format)
+		Errorf(format)
 	}
 
 	format = fmt.Sprintf("Kayseri merkez için iftar vakti, %v:%v", iftar.Hour(), iftar.Minute())

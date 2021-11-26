@@ -1,8 +1,8 @@
 package main
 
 import (
-	"bariscodes.me/gobot/logger"
 	"fmt"
+	"iftarbot/logger"
 	"os"
 	"os/signal"
 	"syscall"

@@ -1,14 +1,14 @@
 package main
 
 import (
-	"bariscodes.me/gobot/logger"
 	"fmt"
+	"iftarbot/logger"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
 )
 
-// ready, update status
+// ready event, update status
 func ready(session *discordgo.Session, event *discordgo.Ready) {
 	err := session.UpdateGameStatus(0, "Running on GO! Ramadan special ✨")
 	if err != nil {
@@ -17,7 +17,7 @@ func ready(session *discordgo.Session, event *discordgo.Ready) {
 	}
 }
 
-// messageCreate, create message to discord
+// messageCreate event, handle commands
 func messageCreate(session *discordgo.Session, event *discordgo.MessageCreate) {
 	if event.Author.ID == session.State.User.ID || event.Author.Bot || !strings.HasPrefix(event.Content, prefix) {
 		return

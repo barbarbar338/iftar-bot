@@ -3,6 +3,7 @@ package logger
 import (
 	"encoding/json"
 	"errors"
+
 	"go.uber.org/zap"
 )
 
@@ -27,10 +28,6 @@ const (
 
 const (
 	InstanceZapLogger int = iota
-)
-
-var (
-	errInvalidLoggerInstance = errors.New("invalid logger instance")
 )
 
 type Logger interface {
@@ -65,7 +62,7 @@ func NewLogger(config Configuration, loggerInstance int) error {
 		log = logger
 		return nil
 	default:
-		return errInvalidLoggerInstance
+		return errors.New("invalid logger instance")
 	}
 }
 

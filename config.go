@@ -1,21 +1,21 @@
 package main
 
 import (
-	"bariscodes.me/gobot/logger"
 	"fmt"
-	"github.com/joho/godotenv"
+	"iftarbot/logger"
 	"log"
 	"os"
+
+	"github.com/joho/godotenv"
 )
 
 func init() {
-	var err error
-	err = godotenv.Load()
+	err := godotenv.Load()
 	if err != nil {
 		panic(fmt.Sprintf("An error occured while loading .env file, error : %v \n", err.Error()))
 	}
 
-	initLogger()	// initialize logger
+	initLogger() // initialize logger
 
 	token = os.Getenv("BOT_TOKEN")
 	prefix = os.Getenv("BOT_PREFIX")

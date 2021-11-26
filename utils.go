@@ -1,10 +1,9 @@
 package main
 
 import (
-	"bariscodes.me/gobot/logger"
 	"encoding/json"
-	"errors"
 	"fmt"
+	"iftarbot/logger"
 	"io"
 	"net/http"
 	"strings"
@@ -40,7 +39,7 @@ type Vakit struct {
 	Yatsi                  string `json:"Yatsi"`
 }
 
-// fetchData, fetching data to API
+// fetchData, fetching data from API
 func fetchData() ([]Vakit, error) {
 	res, err := http.Get(API_URL)
 	if err != nil {
@@ -72,10 +71,10 @@ func fetchData() ([]Vakit, error) {
 		return data, nil
 	}
 
-	return nil, errors.New(fmt.Sprintf("Got http status code %d from server", res.StatusCode))
+	return nil, fmt.Errorf("got http status code %d from server", res.StatusCode)
 }
 
-// playSound, playing adzan sound
+// playSound, plays adzan sound
 func playSound(session *discordgo.Session, guildID string, channelID string) error {
 	voiceConnection, err := session.ChannelVoiceJoin(guildID, channelID, false, true)
 	if err != nil {
@@ -83,7 +82,7 @@ func playSound(session *discordgo.Session, guildID string, channelID string) err
 	}
 
 	isPlaying = true
-	dgvoice.PlayAudioFile(voiceConnection, "./assets/ezan.mp3", make(<-chan bool))
+	dgvoice.PlayAudioFile(voiceConnection, "./assets/adzan.mp3", make(<-chan bool))
 
 	voiceConnection.Close()
 	err = voiceConnection.Disconnect()

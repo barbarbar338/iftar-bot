@@ -1,4 +1,4 @@
-module bariscodes.me/gobot
+module iftarbot
 
 go 1.16
 
