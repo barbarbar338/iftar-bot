@@ -1,0 +1,12 @@
+{
+    "en": {
+        "ping": ":ping_pong: Pong! {{ping}}ms",
+        "owner_only": "This command is only for owners.",
+        "iftar": "Iftar time for Kayseri is {{time}}"
+    },
+    "tr": {
+        "ping": ":ping_pong: Pong! {{ping}}ms",
+        "owner_only": "Bu komut yalnızca sahiplere özeldir.",
+        "iftar": "Kayseri için iftar vakti {{time}}"
+    }
+}

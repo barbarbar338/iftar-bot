@@ -8,6 +8,7 @@ import (
 	"syscall"
 
 	"github.com/bwmarrin/discordgo"
+	language "github.com/moemoe89/go-localization"
 )
 
 var (
@@ -18,6 +19,7 @@ var (
 	ownerID   string
 	data      []Vakit
 	isPlaying bool
+	i18n 	  *language.Config
 )
 
 func main() {

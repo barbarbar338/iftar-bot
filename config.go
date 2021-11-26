@@ -7,12 +7,22 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
+	language "github.com/moemoe89/go-localization"
 )
 
 func init() {
 	err := godotenv.Load()
 	if err != nil {
 		panic(fmt.Sprintf("An error occured while loading .env file, error : %v \n", err.Error()))
+	}
+
+	cfg := language.New()
+	cfg.BindPath("./strings.json")
+	cfg.BindMainLocale("en")
+	i18n, err = cfg.Init()
+
+	if err != nil {
+		panic(fmt.Sprintf("An error occured while loading strings.json file, error : %v \n", err.Error()))
 	}
 
 	initLogger() // initialize logger

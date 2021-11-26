@@ -7,6 +7,7 @@ require (
 	github.com/bwmarrin/discordgo v0.23.2
 	github.com/go-co-op/gocron v1.4.0
 	github.com/joho/godotenv v1.3.0
+	github.com/moemoe89/go-localization v1.0.0 // indirect
 	go.elastic.co/apm v1.14.0 // indirect
 	go.elastic.co/apm/module/apmzap v1.14.0 // indirect
 	go.uber.org/zap v1.19.1 // indirect

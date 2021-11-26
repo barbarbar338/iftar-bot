@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"iftarbot/logger"
+	"strings"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -11,15 +12,16 @@ import (
 // ping command
 func ping(session *discordgo.Session, event *discordgo.MessageCreate)(*discordgo.Message, error) {
 	ping := session.HeartbeatLatency()
-	format := fmt.Sprintf(":ping_pong: Pong! %vms", ping.Milliseconds())
-	return session.ChannelMessageSend(event.ChannelID, format)
+	pingString := strings.Replace(i18n.Lookup("en", "ping"), "{{ping}}", fmt.Sprintf("%v", ping.Milliseconds()), -1)
+	return session.ChannelMessageSend(event.ChannelID, pingString)
 }
 
 // play command, plays adzan sound
 func play(session *discordgo.Session, event *discordgo.MessageCreate)(*discordgo.Message, error) {
+	println(isPlaying)
 	if !isPlaying {
 		if event.Author.ID != ownerID {
-			return session.ChannelMessageSend(event.ChannelID, "Bu komut sahiplere özeldir.")
+			return session.ChannelMessageSend(event.ChannelID, i18n.Lookup("en", "owner_only"))
 		}
 
 		err := playSound(session, guildID, channelID)
@@ -31,7 +33,7 @@ func play(session *discordgo.Session, event *discordgo.MessageCreate)(*discordgo
 
 			return session.ChannelMessageSend(event.ChannelID, format)
 		}
-	}
+	} 
 
 	return nil, errors.New("audio is playing")
 }
@@ -45,9 +47,9 @@ func iftar(session *discordgo.Session, event *discordgo.MessageCreate) (*discord
 		format = fmt.Sprintf("An error occured while parsing date, %v", err.Error())
 
 		logger.WithFields(logger.Fields{"component": "commands", "action": "get iftar information."}).
-		Errorf(format)
+			Errorf(format)
 	}
 
-	format = fmt.Sprintf("Kayseri merkez için iftar vakti, %v:%v", iftar.Hour(), iftar.Minute())
-	return session.ChannelMessageSend(event.ChannelID, format)
+	iftarString := strings.Replace(i18n.Lookup("en", "iftar"), "{{time}}", fmt.Sprintf("%v:%v", iftar.Hour(), iftar.Minute()), -1)
+	return session.ChannelMessageSend(event.ChannelID, iftarString)
 }
